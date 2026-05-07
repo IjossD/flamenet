@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro - FlameNet</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo">FlameNet</a>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="register-section">
+      <h1>Crear cuenta</h1>
+      <p>Únete a FlameNet hoy. Es gratis.</p>
+
+      <p id="msg-error"   class="msg error"   hidden></p>
+      <p id="msg-success" class="msg success" hidden></p>
+
+      <form id="register-form" novalidate>
+        <div class="field">
+          <label for="name">Nombre completo</label>
+          <input type="text" id="name" placeholder="Tu nombre" required autocomplete="name" />
+        </div>
+        <div class="field">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" placeholder="correo@ejemplo.com" required autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
+        </div>
+        <div class="field">
+          <label for="confirm">Confirmar contraseña</label>
+          <input type="password" id="confirm" placeholder="Repite tu contraseña" required autocomplete="new-password" />
+        </div>
+        <button type="submit">Crear cuenta</button>
+      </form>
+
+      <p class="form-footer">
+        ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+      </p>
+    </section>
+  </main>
+
+  
+  <footer>
+    <p>&copy; 2025 FlameNet &mdash; Proyecto Tecnologías Web. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+  const API_BASE = window.location.origin;
+
+  document.getElementById('nav-toggle').addEventListener('click', function() {
+    document.getElementById('nav-menu').classList.toggle('open');
+  });
+
+  function showMsg(id, text) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.hidden = false;
+    setTimeout(() => { el.hidden = true; }, 4000);
+  }
+
+  function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+  document.getElementById('register-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const name     = document.getElementById('name').value.trim();
+    const email    = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirm').value;
+
+    if (!name || !email || !password || !confirm)
+      return showMsg('msg-error', 'Por favor completa todos los campos.');
+    if (!isValidEmail(email))
+      return showMsg('msg-error', 'Ingresa un correo electrónico válido.');
+    if (password.length < 6)
+      return showMsg('msg-error', 'La contraseña debe tener al menos 6 caracteres.');
+    if (password !== confirm)
+      return showMsg('msg-error', 'Las contraseñas no coinciden.');
+
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) return showMsg('msg-error', data.error);
+
+      this.reset();
+      showMsg('msg-success', '¡Cuenta creada! Redirigiendo...');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+
+    } catch (err) {
+      showMsg('msg-error', 'No se pudo conectar con el servidor.');
+    }
+  });
+</script>
+</body>
+</html>

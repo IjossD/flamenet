@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlameNet</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="panel.html" class="logo">FlameNet</a>
+      <ul>
+        <li><a href="about.html">About</a></li>
+        <li><a href="#" id="btn-logout">Cerrar sesión</a></li>
+      </ul>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+
+    <aside class="dash-sidebar">
+      <div class="sidebar-header">
+        <h1>Panel</h1>
+        <p id="welcome-name">Cargando...</p>
+      </div>
+      <span class="sidebar-update" id="update-time">--:--:--</span>
+
+      <nav class="sidebar-nav">
+        <div class="mod-btn active" data-mod="estado">
+          <span class="mod-icon"><i class="bi bi-broadcast-pin"></i></span>
+          Estado del sensor
+          <span class="status-dot" id="sidebar-dot"></span>
+        </div>
+        <div class="mod-btn" data-mod="lectura">
+          <span class="mod-icon"><i class="bi bi-graph-up-arrow"></i></span>
+          Lectura actual
+        </div>
+        <div class="mod-btn" data-mod="historial">
+          <span class="mod-icon"><i class="bi bi-clock-history"></i></span>
+          Historial
+        </div>
+      </nav>
+    </aside>
+
+    <main class="dash-content">
+
+      <!-- MÓDULO 1: ESTADO -->
+      <section class="module active" id="mod-estado">
+        <p class="mod-title">Estado del sensor</p>
+        <p class="mod-subtitle">Monitoreo en tiempo real · sensores MQ / ESP32</p>
+
+        <div id="status-card" class="status-big-card">
+          <p class="status-tag">Estado</p>
+          <p id="status-value" class="status-big-value">--</p>
+          <p id="status-ppm" class="status-ppm">Esperando datos...</p>
+        </div>
+
+        <div class="status-explain">
+          <h3>Análisis del estado</h3>
+          <p class="explain-text" id="explain-text">Cargando análisis...</p>
+          <div class="ranges-grid">
+            <div class="range-chip ok">
+              <div class="range-dot"></div>
+              <div>
+                <div class="range-label">Normal</div>
+                <div class="range-val">0 – 999 ppm</div>
+              </div>
+            </div>
+            <div class="range-chip warn">
+              <div class="range-dot"></div>
+              <div>
+                <div class="range-label">Precaución</div>
+                <div class="range-val">1000 – 5000 ppm</div>
+              </div>
+            </div>
+            <div class="range-chip alert">
+              <div class="range-dot"></div>
+              <div>
+                <div class="range-label">Alerta</div>
+                <div class="range-val">5000 – 10000 ppm</div>
+              </div>
+            </div>
+            <div class="range-chip crit">
+              <div class="range-dot"></div>
+              <div>
+                <div class="range-label">Peligro crítico</div>
+                <div class="range-val">&gt; 10000 ppm</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="history-chart-card">
+          <div class="history-chart-header">
+            <div>
+              <h3>Gráfica de mediciones</h3>
+              <p>Sensor MQ-4 + MQ-2</p>
+            </div>
+            <span class="chart-note">Vista en tiempo real de los datos</span>
+          </div>
+          <div class="history-chart-wrap">
+            <div id="realtime-chart-empty" class="chart-empty-state" hidden>Esperando datos del sensor...</div>
+            <canvas id="realtime-chart" aria-label="Gráfica en tiempo real de lecturas de gas" role="img"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- MÓDULO 2: LECTURA ACTUAL -->
+      <section class="module" id="mod-lectura">
+
+        <div class="hist-header">
+          <div>
+            <p class="mod-title">Lectura actual</p>
+            <p class="mod-subtitle" style="margin-bottom:0">Datos capturados por el sensor en el último ciclo</p>
+          </div>
+          <div class="hist-actions">
+            <button type="button" id="btn-pause" class="hist-btn hist-btn-pause">
+              <span id="pause-icon">⏸</span>
+              <span id="pause-label">Pausar</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="pause-banner" class="pause-banner" style="display:none">
+          <span>⏸</span> Recolección pausada — los datos no se están registrando
+        </div>
+
+        <div class="ppm-bar-wrap">
+          <div class="pb-label">
+            <span>Concentración de gas</span>
+            <span id="bar-ppm-label">-- ppm</span>
+          </div>
+          <div class="ppm-bar-track">
+            <div class="ppm-bar-fill" id="ppm-bar"></div>
+          </div>
+        </div>
+
+        <div class="reading-grid">
+          <div class="reading-card">
+            <div class="rc-label">Valor actual</div>
+            <div class="rc-value" id="rc-value">--</div>
+            <div class="rc-sub">partes por millón</div>
+          </div>
+          <div class="reading-card">
+            <div class="rc-label">Umbral crítico</div>
+            <div class="rc-value">8000</div>
+            <div class="rc-sub">partes por millón</div>
+          </div>
+          <div class="reading-card">
+            <div class="rc-label">Estado</div>
+            <div class="rc-value" id="rc-estado">--</div>
+            <div class="rc-sub" id="rc-estado-sub">--</div>
+          </div>
+          <div class="reading-card">
+            <div class="rc-label">Última lectura</div>
+            <div class="rc-value" id="rc-time">--:--:--</div>
+            <div class="rc-sub">hora militar</div>
+          </div>
+          <div class="reading-card full">
+            <div class="rc-label">Dispositivo</div>
+            <div class="device-row">
+              <div class="device-item">
+                <div class="device-icon">
+                  <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="10" width="24" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="14" y1="10" x2="14" y2="28" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="20" y1="10" x2="20" y2="28" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="26" y1="10" x2="26" y2="28" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="8" y1="16" x2="32" y2="16" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="8" y1="22" x2="32" y2="22" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="17" y1="28" x2="17" y2="32" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="23" y1="28" x2="23" y2="32" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="13" y1="32" x2="27" y2="32" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                </div>
+                <div class="di-label">Microcontrolador</div>
+                <div class="di-val">ESP32</div>
+              </div>
+              <div class="device-item">
+                <div class="device-icon">
+                  <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="10" stroke="currentColor" stroke-width="1.5"/>
+                    <circle cx="20" cy="20" r="4" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="20" y1="6" x2="20" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="20" y1="30" x2="20" y2="34" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="6" y1="20" x2="10" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="30" y1="20" x2="34" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="20" cy="20" r="4" fill="currentColor" opacity="0.15"/>
+                  </svg>
+                </div>
+                <div class="di-label">Sensor</div>
+                <div class="di-val">MQ-4 + MQ-2</div>
+              </div>
+              <div class="device-item">
+                <div class="device-icon">
+                  <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 20 C8 20 12 12 20 12 C28 12 32 20 32 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M8 20 C8 20 12 28 20 28 C28 28 32 20 32 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="20" cy="20" r="3" fill="currentColor"/>
+                    <line x1="20" y1="8" x2="20" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="20" y1="28" x2="20" y2="32" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="di-label">Protocolo</div>
+                <div class="di-val">HTTP / Serial</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="reading-card">
+            <div class="rc-label">Control del LED Azul</div>
+            <div class="rc-value">
+              <label class="toggle-switch">
+                <input type="checkbox" id="led-toggle" />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="rc-sub" id="led-status">Apagado</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MÓDULO 3: HISTORIAL -->
+      <section class="module" id="mod-historial">
+
+        <div class="hist-header">
+          <div>
+            <p class="mod-title">Historial de lecturas</p>
+            <p class="mod-subtitle" style="margin-bottom:0">
+              Mostrando últimos 30 · total acumulado: <span id="total-count">0</span>
+            </p>
+          </div>
+          <div class="hist-actions">
+            <button type="button" id="btn-clear" class="hist-btn hist-btn-clear">
+              <span>🗑</span>
+              <span>Limpiar</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="history-chart-card">
+          <div class="history-chart-header">
+            <div>
+              <h3>Gráfica histórica por días</h3>
+              <p>Promedio diario de lecturas</p>
+            </div>
+            <span class="chart-note">Vista general de los datos</span>
+          </div>
+          <div class="history-chart-wrap">
+            <canvas id="history-chart" aria-label="Gráfica histórica de lecturas de gas por día" role="img"></canvas>
+          </div>
+        </div>
+
+        <div class="history-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Hora</th>
+                <th>Valor (ppm)</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody">
+              <tr><td colspan="4" class="empty-row">Sin registros aún.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 FlameNet &mdash; Proyecto Tecnologías Web. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    const SESSION_KEY = 'flamenet_session';
+    const HISTORY_KEY = 'flamenet_history';
+    const FRESHNESS_WINDOW_MS = 3 * 60 * 1000;
+    const COLOMBIA_TIMEZONE = 'America/Bogota';
+    let realtimeChart = null;
+    let historyChart = null;
+
+    
+const token = localStorage.getItem('flamenet_token');
+const name  = localStorage.getItem('flamenet_name') || 'Usuario';
+if (!token) { window.location.href = 'login.html'; }
+document.getElementById('welcome-name').textContent =
+  'Hola, ' + name.split(' ')[0].toLowerCase();
+
+    
+document.getElementById('btn-logout').addEventListener('click', function(e) {
+  e.preventDefault();
+  localStorage.removeItem('flamenet_token');
+  localStorage.removeItem('flamenet_name');
+  window.location.href = 'login.html';
+});
+
+    /* ── Pausa ── */
+    let isPaused = false;
+    let sensorInterval = null;
+    const btnPause    = document.getElementById('btn-pause');
+    const pauseIcon   = document.getElementById('pause-icon');
+    const pauseLabel  = document.getElementById('pause-label');
+    const pauseBanner = document.getElementById('pause-banner');
+
+    btnPause.addEventListener('click', function () {
+      isPaused = !isPaused;
+      if (isPaused) {
+        pauseIcon.textContent  = '▶';
+        pauseLabel.textContent = 'Reanudar';
+        btnPause.classList.add('paused');
+        pauseBanner.style.display = 'flex';
+        clearInterval(sensorInterval);
+        sensorInterval = null;
+        document.getElementById('update-time').style.opacity = '0.4';
+        document.getElementById('sidebar-dot').style.animationPlayState = 'paused';
+      } else {
+        pauseIcon.textContent  = '⏸';
+        pauseLabel.textContent = 'Pausar';
+        btnPause.classList.remove('paused');
+        pauseBanner.style.display = 'none';
+        document.getElementById('update-time').style.opacity = '1';
+        document.getElementById('sidebar-dot').style.animationPlayState = 'running';
+        fetchSensor();
+        sensorInterval = setInterval(fetchSensor, 5000);
+      }
+    });
+
+    /* ── Limpiar ── */
+    document.getElementById('btn-clear').addEventListener('click', function () {
+      if (!confirm('¿Seguro que quieres limpiar todo el historial?')) return;
+      localStorage.removeItem(HISTORY_KEY);
+      renderHistory();
+      renderRealtimeChart([]);
+      renderHistoryChart([]);
+      setRealtimeWaiting(true);
+    });
+
+    /* ── 4 niveles ── */
+    function getLevel(value) {
+      if (value < 1000)      return { key: 'normal',     label: 'Normal',          sub: 'Nivel bajo de gas combustible',            color: 'var(--green)',   barClass: 'normal' };
+      if (value < 5000)      return { key: 'precaucion', label: 'Precaución',      sub: 'Concentración moderada de gas',            color: '#e8a80a',        barClass: 'warn'   };
+      if (value < 10000)     return { key: 'alerta',     label: 'Alerta',          sub: 'Concentración alta · actuar con cuidado',  color: 'var(--accent)',  barClass: 'alerta' };
+      return                       { key: 'critico',    label: 'Peligro Crítico', sub: 'Concentración peligrosa · evacuar',        color: '#9b0000',        barClass: 'critico'};
+    }
+
+    /* ── Utilidades ── */
+    function militaryTime() {
+      return new Date().toLocaleTimeString('es-CO', {
+        hour: '2-digit', minute: '2-digit', hour12: false,
+        timeZone: COLOMBIA_TIMEZONE
+      });
+    }
+
+    function formatTimeHHMM(value) {
+      if (!value) return militaryTime();
+
+      if (value instanceof Date) {
+        return value.toLocaleTimeString('es-CO', {
+          hour: '2-digit', minute: '2-digit', hour12: false,
+          timeZone: COLOMBIA_TIMEZONE
+        });
+      }
+
+      const text = String(value).trim();
+
+      if (/^\d{2}:\d{2}$/.test(text)) {
+        return text;
+      }
+
+      const hhmmMatch = text.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+      if (hhmmMatch) {
+        const hours = String(Number(hhmmMatch[1])).padStart(2, '0');
+        return `${hours}:${hhmmMatch[2]}`;
+      }
+
+      const parsedDate = new Date(text);
+      if (!Number.isNaN(parsedDate.getTime())) {
+        return parsedDate.toLocaleTimeString('es-CO', {
+          hour: '2-digit', minute: '2-digit', hour12: false,
+          timeZone: COLOMBIA_TIMEZONE
+        });
+      }
+
+      return militaryTime();
+    }
+
+    function saveHistory(h) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+    }
+
+    function todayKey(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: COLOMBIA_TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(date);
+
+      const year = parts.find(part => part.type === 'year')?.value || '0000';
+      const month = parts.find(part => part.type === 'month')?.value || '00';
+      const day = parts.find(part => part.type === 'day')?.value || '00';
+
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDayLabel(dayKey) {
+      const date = new Date(`${dayKey}T12:00:00-05:00`);
+      return new Intl.DateTimeFormat('es-CO', {
+        timeZone: COLOMBIA_TIMEZONE,
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short'
+      }).format(date);
+    }
+
+    function isFreshTimestamp(timestamp) {
+      if (!timestamp) return false;
+      const timeValue = new Date(timestamp).getTime();
+      if (Number.isNaN(timeValue)) return false;
+      return Date.now() - timeValue <= FRESHNESS_WINDOW_MS;
+    }
+
+    function isFreshReading(reading) {
+      if (!reading) return false;
+      if (typeof reading.createdAt === 'string' && isFreshTimestamp(reading.createdAt)) return true;
+      if (typeof reading.time === 'string' && isFreshTimestamp(reading.time)) return true;
+      return false;
+    }
+
+    function hasFreshHistory(history) {
+      if (!Array.isArray(history) || !history.length) return false;
+      const latest = history[history.length - 1];
+      if (isFreshReading(latest)) return true;
+      return latest && latest.createdAt ? isFreshTimestamp(latest.createdAt) : false;
+    }
+
+    function clearStoredHistory() {
+      localStorage.removeItem(HISTORY_KEY);
+    }
+
+    function getHistory() {
+      try {
+        const items = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+        return items.map(item => ({
+          ...item,
+          day: item.day || todayKey()
+        }));
+      }
+      catch { return []; }
+    }
+
+    function setRealtimeWaiting(isWaiting) {
+      const emptyState = document.getElementById('realtime-chart-empty');
+      if (emptyState) {
+        emptyState.hidden = !isWaiting;
+        emptyState.style.display = isWaiting ? 'flex' : 'none';
+        emptyState.setAttribute('aria-hidden', String(!isWaiting));
+      }
+
+      const chartWrap = document.querySelector('.history-chart-wrap');
+      if (chartWrap) {
+        chartWrap.classList.toggle('show-empty', isWaiting);
+      }
+    }
+
+    function renderRealtimeChart(history) {
+      const canvas = document.getElementById('realtime-chart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const source = hasFreshHistory(history) ? history.slice(-30) : [];
+      const labels = source.map((item, index) => item.time || `#${index + 1}`);
+      const values = source.map((item) => Number(item.value) || 0);
+      setRealtimeWaiting(source.length === 0);
+
+      if (realtimeChart) {
+        realtimeChart.data.labels = labels;
+        realtimeChart.data.datasets[0].data = values;
+        realtimeChart.update();
+        return;
+      }
+
+      realtimeChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'ppm',
+            data: values,
+            borderColor: '#e8500a',
+            backgroundColor: 'rgba(232, 80, 10, 0.16)',
+            pointBackgroundColor: '#e8500a',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            borderWidth: 2,
+            tension: 0.35,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  return ` ${context.parsed.y} ppm`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(24, 23, 15, 0.06)' },
+              ticks: { color: '#8a8478', maxRotation: 0, autoSkip: true }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(24, 23, 15, 0.08)' },
+              ticks: { color: '#8a8478' }
+            }
+          }
+        }
+      });
+    }
+
+    function aggregateByDay(history) {
+      const bucket = new Map();
+      (Array.isArray(history) ? history : []).forEach(item => {
+        if (!item || !isFreshReading(item)) return;
+        const day = item.day || todayKey();
+        const value = Number(item.value) || 0;
+        const current = bucket.get(day) || { total: 0, count: 0 };
+        current.total += value;
+        current.count += 1;
+        bucket.set(day, current);
+      });
+
+      return [...bucket.entries()]
+        .sort((left, right) => left[0].localeCompare(right[0]))
+        .map(([day, stats]) => ({
+          day,
+          label: formatDayLabel(day),
+          value: Math.round(stats.total / stats.count)
+        }));
+    }
+
+    function renderHistoryChart(history) {
+      const canvas = document.getElementById('history-chart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const source = aggregateByDay(history);
+      const labels = source.map(item => item.label);
+      const values = source.map(item => item.value);
+
+      if (historyChart) {
+        historyChart.data.labels = labels;
+        historyChart.data.datasets[0].data = values;
+        historyChart.update();
+        return;
+      }
+
+      historyChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'ppm promedio',
+            data: values,
+            backgroundColor: 'rgba(232, 80, 10, 0.3)',
+            borderColor: '#e8500a',
+            borderWidth: 1,
+            borderRadius: 8,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  return ` ${context.parsed.y} ppm promedio`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#8a8478' }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(24, 23, 15, 0.08)' },
+              ticks: { color: '#8a8478' }
+            }
+          }
+        }
+      });
+    }
+
+    /* ── Render tabla ── */
+    function renderHistory() {
+      const history = getHistory();
+      const total   = history.length;
+      document.getElementById('total-count').textContent = total;
+      const tbody = document.getElementById('history-tbody');
+
+      if (!total) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Sin registros aún.</td></tr>';
+        return;
+      }
+
+      const visible = history.slice(-30).reverse();
+      tbody.innerHTML = visible.map((r, i) => {
+        const num = total - i;
+        return `<tr>
+          <td class="td-num">${num}</td>
+          <td class="td-time">${formatTimeHHMM(r.time)}</td>
+          <td class="td-val">${r.value} <span class="td-unit">ppm</span></td>
+          <td><span class="badge ${r.key}">${r.label}</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+    /* ── Análisis ── */
+    function buildExplanation(value, level, history) {
+      const prev = history.length >= 2 ? history[history.length - 2] : null;
+      const trend = prev ? (value - prev.value) : 0;
+      const trendText = trend > 0
+        ? `subiendo ${trend} ppm respecto al registro anterior`
+        : trend < 0
+          ? `bajando ${Math.abs(trend)} ppm respecto al registro anterior`
+          : 'estable respecto al registro anterior';
+
+      const ppmBold = `<strong>${value} ppm</strong>`;
+
+      const msgs = {
+  normal:    `El sensor registra ${ppmBold}.\nNivel bajo de gas combustible.\nConcentración ${trendText}.\n<strong>No hay riesgo detectado.</strong>`,
+  precaucion:`El sensor registra ${ppmBold}.\nConcentración ${trendText}.\n<strong>Monitorea el área y revisa ventilación.</strong>`,
+  alerta:    `El sensor registra ${ppmBold}.\nConcentración ${trendText}.\n<strong>Riesgo elevado — ventila el área y reduce la exposición.</strong>`,
+  critico:   `El sensor registra ${ppmBold}. AMBIENTE PELIGROSO.\nConcentración ${trendText}.\n<strong>Evacúa y activa protocolos de emergencia.</strong>`
+};
+      return msgs[level.key];
+    }
+
+    /* ── Actualizar UI ── */
+    function updateUI(value, time, save = true, day = todayKey(), createdAt = new Date().toISOString()) {
+      const now   = formatTimeHHMM(time || militaryTime());
+      const level = getLevel(value);
+
+      document.getElementById('update-time').textContent   = now;
+      document.getElementById('status-value').textContent  = level.label;
+      document.getElementById('status-ppm').textContent    = value + ' ppm detectados';
+
+      /* card estado principal */
+      const card = document.getElementById('status-card');
+      card.className = 'status-big-card ' + level.key;
+      const sv = document.getElementById('status-value');
+      sv.style.color = level.color;
+
+      /* dot sidebar */
+      document.getElementById('sidebar-dot').className = 'status-dot ' + level.key;
+
+      /* explicación */
+      const h = getHistory();
+      document.getElementById('explain-text').innerHTML = buildExplanation(value, level, h);
+
+      /* lectura actual */
+      document.getElementById('rc-value').textContent      = value;
+      document.getElementById('rc-time').textContent       = now;
+      document.getElementById('rc-estado').textContent     = level.label;
+      document.getElementById('rc-estado').style.color     = level.color;
+      document.getElementById('rc-estado-sub').textContent = level.sub;
+      document.getElementById('bar-ppm-label').textContent = value + ' ppm';
+
+      /* barra — máximo visual en 500 ppm */
+      const pct = Math.min((value / 500) * 100, 100);
+      const bar = document.getElementById('ppm-bar');
+      bar.style.width = pct + '%';
+      bar.className   = 'ppm-bar-fill ' + level.barClass;
+
+      /* historial */
+      if (save && !isPaused) {
+        h.push({ value, key: level.key, label: level.label, time: now, day, createdAt });
+        saveHistory(h);
+        renderHistory();
+        renderRealtimeChart(h);
+        renderHistoryChart(h);
+      }
+    }
+
+    async function fetchSensor() {
+      try {
+        const res = await fetch('/api/readings/latest', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) {
+          return window.location.href = 'login.html';
+        }
+
+        const reading = await res.json();
+        if (!reading || reading.hasData === false || typeof reading.value !== 'number' || !isFreshReading(reading)) {
+          setRealtimeWaiting(true);
+          return;
+        }
+
+        const createdAt = reading.createdAt || new Date().toISOString();
+        const day = todayKey(new Date(createdAt));
+        updateUI(reading.value, reading.time, true, day, createdAt);
+      } catch (err) {
+        console.error('Error obteniendo lecturas:', err);
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/readings', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) {
+          return window.location.href = 'login.html';
+        }
+
+        const readings = await res.json();
+        if (!Array.isArray(readings) || !readings.length) {
+          clearStoredHistory();
+          renderHistory();
+          renderRealtimeChart([]);
+          renderHistoryChart([]);
+          setRealtimeWaiting(true);
+          return;
+        }
+
+        const history = readings.slice().reverse().map(r => {
+          const value = Number(r.value);
+          const level = getLevel(value);
+          return {
+            value,
+            key: level.key,
+            label: level.label,
+            time: formatTimeHHMM(r.time || r.createdAt || militaryTime()),
+            day: r.createdAt ? todayKey(new Date(r.createdAt)) : todayKey(),
+            createdAt: r.createdAt || null
+          };
+        });
+
+        if (!hasFreshHistory(history)) {
+          clearStoredHistory();
+          renderHistory();
+          renderRealtimeChart([]);
+          renderHistoryChart([]);
+          setRealtimeWaiting(true);
+          return;
+        }
+
+        saveHistory(history);
+        renderHistory();
+        renderRealtimeChart(history);
+        renderHistoryChart(history);
+
+        if (!history.length) {
+          setRealtimeWaiting(true);
+        }
+
+        if (history.length) {
+          const latest = history[history.length - 1];
+          updateUI(latest.value, latest.time, false, latest.day, latest.createdAt || new Date().toISOString());
+        }
+      } catch (err) {
+        console.error('Error cargando historial:', err);
+        renderHistory();
+        renderRealtimeChart(getHistory());
+        renderHistoryChart(getHistory());
+      }
+    }
+
+    /* ── Navegación sidebar ── */
+    document.querySelectorAll('.mod-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.mod-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('mod-' + this.dataset.mod).classList.add('active');
+      });
+    });
+
+    /* ── Control del LED ── */
+    const ledToggle = document.getElementById('led-toggle');
+    const ledStatus = document.getElementById('led-status');
+
+    // Obtener estado inicial del LED
+    async function fetchLEDStatus() {
+      try {
+        const res = await fetch('/api/led/status-web', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) {
+          return window.location.href = 'login.html';
+        }
+
+        const data = await res.json();
+        ledToggle.checked = data.led;
+        ledStatus.textContent = data.led ? 'Encendido 🔵' : 'Apagado';
+      } catch (err) {
+        console.error('Error obteniendo estado del LED:', err);
+      }
+    }
+
+    // Cambiar estado del LED
+    ledToggle.addEventListener('change', async function() {
+      const isOn = this.checked;
+      try {
+        const res = await fetch('/api/led/status', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ led: isOn })
+        });
+
+        if (res.status === 401) {
+          return window.location.href = 'login.html';
+        }
+
+        const data = await res.json();
+        ledStatus.textContent = data.led ? 'Encendido 🔵' : 'Apagado';
+        console.log('LED ' + (data.led ? 'ENCENDIDO' : 'APAGADO'));
+      } catch (err) {
+        console.error('Error al cambiar estado del LED:', err);
+        ledToggle.checked = !isOn; // revertir en caso de error
+      }
+    });
+
+    loadHistory().then(() => {
+      fetchLEDStatus();
+      sensorInterval = setInterval(fetchSensor, 5000);
+      const history = getHistory();
+      renderRealtimeChart(history);
+      renderHistoryChart(history);
+      setRealtimeWaiting(!hasFreshHistory(history));
+    });
+  </script>
+
+  <script>
+    (function() {
+      var btn = document.getElementById('nav-toggle');
+      var ul  = document.querySelector('header nav ul');
+      if (!btn || !ul) return;
+      btn.addEventListener('click', function() {
+        var open = ul.classList.toggle('nav-open');
+        btn.classList.toggle('open', open);
+        btn.setAttribute('aria-expanded', open);
+      });
+      // close on outside click
+      document.addEventListener('click', function(e) {
+        if (!btn.contains(e.target) && !ul.contains(e.target)) {
+          ul.classList.remove('nav-open');
+          btn.classList.remove('open');
+          btn.setAttribute('aria-expanded', false);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

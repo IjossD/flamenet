@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - FlameNet</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo">FlameNet</a>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="#" id="btn-logout">Cerrar sesión</a></li>
+  
+      </ul>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+
+    <section id="about-hero">
+      <h1>Sobre el proyecto</h1>
+      <p>Tecnologías Web aplicadas al monitoreo de sensores en tiempo real.</p>
+    </section>
+
+    <section id="about-content">
+
+      <article class="anim-fade-up">
+        <h2>¿Qué es este proyecto?</h2>
+        <p>
+          Plataforma web desarrollada en la asignatura de Tecnologías Web. Se integra con hardware
+          físico para monitorear sensores en tiempo real, mostrando los datos de forma clara y
+          accesible desde cualquier navegador.
+        </p>
+      </article>
+
+      <article class="anim-fade-up">
+        <h2>Tecnología utilizada</h2>
+        <p>
+          El sistema utiliza el microcontrolador <strong>ESP32</strong> como nodo de captura de datos,
+          trabajando con un <strong>sensor de gas MQ-4</strong>. La comunicación entre el hardware y
+          la plataforma se gestiona a través de protocolos estándar de red.
+        </p>
+      </article>
+
+      <article class="anim-fade-up">
+        <h2>Integrantes</h2>
+        <ul>
+          <li>Nelson Sierra</li>
+          <li>Joseph De La Rans</li>
+          <li>Oscar Llanos</li>
+          <li>Keiner Fontalvo</li>
+        </ul>
+      </article>
+
+    </section>
+
+
+  </main>
+
+  <footer>
+    <p>&copy; 2025 FlameNet &mdash; Proyecto Tecnologías Web. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    (function() {
+      var btn = document.getElementById('nav-toggle');
+      var ul  = document.querySelector('header nav ul');
+      if (!btn || !ul) return;
+      btn.addEventListener('click', function() {
+        var open = ul.classList.toggle('nav-open');
+        btn.classList.toggle('open', open);
+        btn.setAttribute('aria-expanded', open);
+      });
+      // close on outside click
+      document.addEventListener('click', function(e) {
+        if (!btn.contains(e.target) && !ul.contains(e.target)) {
+          ul.classList.remove('nav-open');
+          btn.classList.remove('open');
+          btn.setAttribute('aria-expanded', false);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

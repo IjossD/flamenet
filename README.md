@@ -14,7 +14,7 @@
 
 # 📖 Descripción
 
-**FlameNet** es una aplicación full-stack diseñada para integrar una interfaz web moderna con dispositivos IoT basados en ESP32, permitiendo el envío, recepción y visualización de datos en tiempo real.
+**FlameNet** hola es una aplicación full-stack diseñada para integrar una interfaz web moderna con dispositivos IoT basados en ESP32, permitiendo el envío, recepción y visualización de datos en tiempo real.
 
 El proyecto está enfocado en una arquitectura modular y escalable, separando:
 
@@ -65,8 +65,8 @@ Proyectoo/
 
 - Node.js
 - Express.js
-- MongoDB 
-- Mongoose 
+- MongoDB
+- Mongoose
 - JWT
 - Socket.IO
 
@@ -109,6 +109,7 @@ POST /api/device/connect
   "humidity": 71
 }
 ```
+
 ---
 
 # ⚙️ Variables de entorno

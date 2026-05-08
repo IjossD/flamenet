@@ -1,4 +1,4 @@
-# 🚀 Proyectoo
+# FlameNet
 
 > Plataforma full-stack conectada con hardware IoT para monitoreo, visualización y gestión de datos en tiempo real.
 

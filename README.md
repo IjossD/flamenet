@@ -47,7 +47,8 @@ flamenet/
 ├── frontend/         # Interfaz web
 ├── backend/          # API y lógica 
 ├── esp32/            #Código del esp32
-├── docs/             # Documentación      ├── assets/           # Recursos estáticos
+├── docs/             # Documentación      
+├── assets/           # Recursos estáticos
 └── README.md
 ```
 

@@ -26,16 +26,16 @@ El proyecto está enfocado en una arquitectura modular y escalable, separando:
 
 ---
 
-# ✨ Características principales
+# Características principales
 
-- 📊 Visualización de datos en tiempo real
-- 🔌 Integración con ESP32
-- 🌐 API REST para comunicación entre servicios
-- 📡 Envío y recepción de información desde hardware
-- 🔐 Sistema preparado para autenticación y seguridad
-- 📈 Arquitectura escalable y modular
-- ⚡ Comunicación eficiente entre frontend y backend
-- 🧩 Separación clara de responsabilidades
+- Visualización de datos en tiempo real
+- Integración con ESP32
+- API REST para comunicación entre servicios
+- Envío y recepción de información desde hardware
+- Sistema preparado para autenticación y seguridad
+- Arquitectura escalable y modular
+- Comunicación eficiente entre frontend y backend
+- Separación clara de responsabilidades
 
 ---
 

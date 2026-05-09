@@ -87,28 +87,280 @@ Proyectoo/
 
 # 🔌 APIs y comunicación
 
-## API REST
+La API de FlameNet está construida con **Express.js** y utiliza dos tipos de autenticación: **JWT** para usuarios web y **API Key** para el ESP32. Todos los endpoints utilizan la base URL `/api/`.
 
-La aplicación utiliza una API REST para conectar el frontend con el backend y permitir la interacción con los dispositivos.
+## Base URL
 
-### Ejemplo de endpoints
-
-```http
-GET /api/data
-POST /api/data
-GET /api/status
-POST /api/device/connect
+```
+http://localhost:3000/api/
 ```
 
-### Ejemplo de respuesta
+## Tabla de Endpoints
+
+| Método | Endpoint           | Descripción                             |
+| ------ | ------------------ | --------------------------------------- |
+| `POST` | `/auth/register`   | Registrar un usuario nuevo              |
+| `POST` | `/auth/login`      | Iniciar sesión y obtener JWT            |
+| `GET`  | `/readings/`       | Obtener historial de lecturas recientes |
+| `GET`  | `/readings/latest` | Obtener la lectura más reciente         |
+| `POST` | `/readings/save`   | Guardar lectura enviada por ESP32       |
+| `GET`  | `/led/status`      | Obtener estado del LED (para ESP32)     |
+| `POST` | `/led/status`      | Cambiar estado del LED desde panel web  |
+| `GET`  | `/led/status-web`  | Obtener estado del LED para frontend    |
+| `GET`  | `/health`          | Verificar estado del servidor y MongoDB |
+
+---
+
+## Ejemplos de Requests y Responses
+
+### 1. Registro de Usuario
+
+**Request:**
+
+```bash
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Joseph",
+  "email": "test@test.com",
+  "password": "123456"
+}
+```
+
+**Response:**
 
 ```json
 {
-  "status": "online",
-  "temperature": 26.4,
-  "humidity": 71
+  "message": "¡Cuenta creada exitosamente!",
+  "userId": "507f1f77bcf86cd799439011"
 }
 ```
+
+---
+
+### 2. Login
+
+**Request:**
+
+```bash
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "123456"
+}
+```
+
+**Response:**
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "name": "Joseph",
+  "email": "test@test.com"
+}
+```
+
+---
+
+### 3. Guardar Lectura (ESP32)
+
+**Request:**
+
+```bash
+POST /api/readings/save
+Content-Type: application/json
+x-api-key: TU_API_KEY
+
+{
+  "value": 120,
+  "estado": "Normal",
+  "time": "12:30"
+}
+```
+
+**Response:**
+
+```json
+{
+  "ok": true,
+  "reading": {
+    "_id": "507f1f77bcf86cd799439012",
+    "value": 120,
+    "estado": "Normal",
+    "time": "12:30",
+    "createdAt": "2026-05-08T12:30:00Z"
+  }
+}
+```
+
+---
+
+### 4. Obtener Historial de Lecturas
+
+**Request:**
+
+```bash
+GET /api/readings/
+Authorization: Bearer JWT_TOKEN
+```
+
+**Response:**
+
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439012",
+    "value": 120,
+    "estado": "Normal",
+    "time": "12:30",
+    "createdAt": "2026-05-08T12:30:00Z"
+  },
+  {
+    "_id": "507f1f77bcf86cd799439013",
+    "value": 1500,
+    "estado": "Precaución",
+    "time": "12:35",
+    "createdAt": "2026-05-08T12:35:00Z"
+  }
+]
+```
+
+---
+
+### 5. Obtener Última Lectura
+
+**Request:**
+
+```bash
+GET /api/readings/latest
+Authorization: Bearer JWT_TOKEN
+```
+
+**Response:**
+
+```json
+{
+  "value": 1500,
+  "estado": "Precaución",
+  "time": "12:35"
+}
+```
+
+---
+
+### 6. Obtener Estado del LED (ESP32)
+
+**Request:**
+
+```bash
+GET /api/led/status
+x-api-key: TU_API_KEY
+```
+
+**Response:**
+
+```json
+{
+  "led": true
+}
+```
+
+---
+
+### 7. Cambiar Estado del LED
+
+**Request:**
+
+```bash
+POST /api/led/status
+Authorization: Bearer JWT_TOKEN
+Content-Type: application/json
+
+{
+  "led": true
+}
+```
+
+**Response:**
+
+```json
+{
+  "ok": true,
+  "led": true
+}
+```
+
+---
+
+### 8. Health Check
+
+**Request:**
+
+```bash
+GET /health
+```
+
+**Response:**
+
+```json
+{
+  "ok": true,
+  "mongoReady": true
+}
+```
+
+---
+
+## 🔐 Autenticación
+
+### JWT (JSON Web Tokens)
+
+- Utilizado por usuarios web
+- Se envía en el header: `Authorization: Bearer JWT_TOKEN`
+- Se obtiene al hacer login
+
+### API Key
+
+- Utilizado por el ESP32
+- Se envía en el header: `x-api-key: TU_API_KEY`
+- Configurado en `.env` como `ESP32_API_KEY`
+
+---
+
+## 📝 Observaciones Técnicas del Backend
+
+### Stack de Tecnologías
+
+- **Express.js** - Framework web
+- **MongoDB + Mongoose** - Base de datos
+- **JWT** - Autenticación de usuarios
+- **bcryptjs** - Hashing de contraseñas
+- **CORS** - Compartir recursos entre orígenes
+
+### Conceptos Clave
+
+**1. Freshness Window**
+
+- Las lecturas se filtran automáticamente por "freshness window"
+- Por defecto: 60,000 ms (1 minuto)
+- Solo devuelve lecturas dentro de esta ventana de tiempo reciente
+- Se configura con `READING_FRESHNESS_WINDOW_MS`
+
+**2. Estado del LED**
+
+- Usa una variable global: `let ledState = false`
+- **Importante:** NO se guarda en MongoDB
+- Si el servidor se reinicia, el estado se resetea a `false`
+- Es temporal y solo vive en memoria durante la ejecución
+
+**3. Dos Sistemas de Autenticación**
+
+- **JWT:** Para interacción desde el frontend
+- **API Key:** Para comunicación segura con ESP32
+- Evita que cualquier dispositivo pueda enviar datos
 
 ---
 

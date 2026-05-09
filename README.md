@@ -42,12 +42,12 @@ El proyecto está enfocado en una arquitectura modular y escalable, separando:
 # 🏗️ Arquitectura del proyecto
 
 ```bash
-Proyectoo/
+flamenet/
 │
-├── frontend/          # Interfaz web
-├── backend/           # API y lógica de negocio
-├── esp32/             # Código del microcontrolador
-├── docs/              # Documentación            # Recursos estáticos
+├── frontend/         # Interfaz web
+├── backend/          # API y lógica 
+├── esp32/            #Código del esp32
+├── docs/             # Documentación      ├── assets/           # Recursos estáticos
 └── README.md
 ```
 

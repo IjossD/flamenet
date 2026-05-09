@@ -190,11 +190,67 @@ const char* serverUrl = "http://YOUR_API/api/data";
 
 # 📷 Capturas del proyecto
 
-> hey aquí pongan capturitas de la interfaz web, dashboard y funcionamiento.
+Las siguientes capturas muestran los módulos principales de FlameNet y el flujo completo de uso de la plataforma.
 
-```md
-/assets/screenshots/
-```
+## 1. Sign Up
+
+![Sign Up](assets/screenshots/signIn.png)
+
+Formulario para crear nuevas cuentas en el sistema. Permite a nuevos usuarios registrarse e iniciar su experiencia en la plataforma FlameNet.
+
+## 2. Login
+
+![Login](assets/screenshots/login.png)
+
+Pantalla de autenticación. Los usuarios ingresan sus credenciales para acceder al panel de control y funcionalidades de monitoreo.
+
+## 3. Dashboard 1
+
+![Dashboard 1](assets/screenshots/dashboard1.png)
+
+Vista principal del panel de control. Ofrece un resumen general del estado del sistema con información clave del monitoreo en tiempo real.
+
+## 4. Dashboard 2 - Gráfica de mediciones
+
+![Dashboard 2](assets/screenshots/dashboard2.png)
+
+Sección de visualización de métricas con gráficos en tiempo real. Permite identificar patrones y tendencias en los valores capturados por los sensores.
+
+## 5. Lectura 1 - Datos y umbrales
+
+![Lectura 1](assets/screenshots/lectura1.png)
+
+Muestra el valor actual del sensor, estado operativo y umbrales configurados. Proporciona información detallada de cada medición con indicadores visuales de normalidad.
+
+## 6. Lectura 2 - Control del LED
+
+![Lectura 2](assets/screenshots/lectura2.png)
+
+Panel de control remoto del LED conectado al ESP32. Permite activar o desactivar el LED desde la interfaz web para pruebas y automatización.
+
+## 7. Historial 1 - Gráfica histórica
+
+![Historial 1](assets/screenshots/historial1.png)
+
+Visualización gráfica del histórico de mediciones por días. Facilita el análisis de tendencias a largo plazo y comportamiento del sistema.
+
+## 8. Historial 2 - Tabla de datos
+
+![Historial 2](assets/screenshots/historial2.png)
+
+Tabla detallada del historial con columnas: Hora, Valor (ppm) y Estado. Permite revisar cada medición individual de forma estructurada.
+
+## 9. Base de datos MongoDB
+
+![MongoDB](assets/screenshots/mongodb.png)
+
+Captura de la base de datos MongoDB mostrando las colecciones de usuarios, lecturas y configuraciones del sistema.
+
+## 10. Sección About Us
+
+![About Us](assets/screenshots/aboutUs.png)
+
+Página de información del proyecto. Presenta detalles sobre FlameNet, el equipo de desarrollo y el propósito de la plataforma.
 
 ---
 

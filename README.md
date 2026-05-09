@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/Frontend-Web-blue?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Backend-API-green?style=for-the-badge" />
   <img src="https://img.shields.io/badge/ESP32-IoT-orange?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/License-MIT-black?style=for-the-badge" />
+
 </p>
 
 ---

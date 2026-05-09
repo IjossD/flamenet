@@ -218,7 +218,7 @@ Sección de visualización de métricas con gráficos en tiempo real. Permite id
 
 ## 5. Lectura 1 - Datos y umbrales
 
-![Lectura 1](assets/screenshots/lectura1.png)
+![Lectura 1](assets/screenshots/lectura.png)
 
 Muestra el valor actual del sensor, estado operativo y umbrales configurados. Proporciona información detallada de cada medición con indicadores visuales de normalidad.
 
@@ -230,7 +230,7 @@ Panel de control remoto del LED conectado al ESP32. Permite activar o desactivar
 
 ## 7. Historial 1 - Gráfica histórica
 
-![Historial 1](assets/screenshots/historial1.png)
+![Historial 1](assets/screenshots/historial.png)
 
 Visualización gráfica del histórico de mediciones por días. Facilita el análisis de tendencias a largo plazo y comportamiento del sistema.
 
@@ -242,7 +242,7 @@ Tabla detallada del historial con columnas: Hora, Valor (ppm) y Estado. Permite 
 
 ## 9. Base de datos MongoDB
 
-![MongoDB](assets/screenshots/mongodb.png)
+![MongoDB](assets/screenshots/mongoDB.png)
 
 Captura de la base de datos MongoDB mostrando las colecciones de usuarios, lecturas y configuraciones del sistema.
 
